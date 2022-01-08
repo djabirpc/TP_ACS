@@ -4,36 +4,32 @@
  * as a guideline for developing your own functions.
  */
 
-#include "bib.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include "livre.h"
 
-void
-livre_1(char *host)
+int
+main (int argc, char *argv[])
 {
+	char *host;
 	CLIENT *clnt;
-	void  *result_1;
+	int  *result_1;
 	char *init_1_arg;
-	void  *result_2;
+	int  *result_2;
 	livre  ajouter_1_arg;
-	void  *result_3;
+	int  *result_3;
 	livre  modifier_1_arg;
-	void  *result_4;
-	char * supprimer_1_arg;
-	supprimer_1_arg = (char*)malloc(30);
+	int  *result_4;
+	int  supprimer_1_arg;
 	livre  *result_5;
-	char * consulter_1_arg;
-	consulter_1_arg = (char*)malloc(30);
+	int  consulter_1_arg;
 	livres  *result_6;
 	char *afficher_1_arg;
 	livres  *result_7;
 	char * auteur_1_arg;
 	auteur_1_arg = (char*)malloc(30);
-
 	float  *result_8;
 	char *prix_1_arg;
 
-	int choisir;
+	int numero;
 	livre *lv1;
 	lv1 = malloc(sizeof(livre));
 
@@ -49,12 +45,19 @@ livre_1(char *host)
 	int nbrExemplaire;
 	float prix;
 
-	clnt = clnt_create (host, LIVRE, V1, "udp");
+
+	if (argc < 2) {
+		printf ("usage: %s server_host\n", argv[0]);
+		exit (1);
+	}
+	clnt = clnt_create (argv[1], LIVRE, V1, "udp");
 	if (clnt == NULL) {
 		clnt_pcreateerror (host);
 		exit (1);
 	}
-	while(1){
+
+	while(1)
+	{
 		printf("Choisir une action à effectuer :\n");
 		printf("1 : Initialiser la bibliothèque\n");
 		printf("2 : Ajouter livre(s)\n");
@@ -66,15 +69,23 @@ livre_1(char *host)
 		printf("8 : Afficher le prix total des livres\n");
 		printf("0 : Quitter le programme\n");
 		printf("--> ");
-		scanf("%d",&choisir);
-		switch(choisir)
+		scanf("%d",&numero);
+
+		switch(numero)
 		{
 			case 1:
 				result_1 = init_1((void*)&init_1_arg, clnt);
-				if (result_1 == (void *) NULL) {
-					clnt_perror (clnt, "call failed");
+				if (result_1 == (int *) NULL) {
+				clnt_perror (clnt, "call failed");
 				}
-				printf("Tableau Initialiser\n");
+				if(*result_1 == 1)
+				{
+					printf("Tableau Initialiser\n");
+				}
+				else
+				{
+					printf("Tableau No Initialiser\n");
+				}
 				break;
 			case 2:
 				printf("num -->");
@@ -85,13 +96,13 @@ livre_1(char *host)
 				scanf("%s",auteur);
 				printf("editeur -->");
 				scanf("%s",editeur);
-				printf("annee Pub(yyyy/mm/dd) -->");
+				printf("annee Pub(yyyy-mm-dd) -->");
 				scanf("%s",annePub);
-				printf("nbr exemplaire -->");
+				printf("nombre exemplaire -->");
 				scanf("%d",&nbrExemplaire);
 				printf("prix -->");
 				scanf("%f",&prix);
-				
+
 				lv1->titre = (char*)malloc(30);
 				lv1->auteur = (char*)malloc(30);
 				lv1->editeur = (char*)malloc(30);
@@ -102,13 +113,20 @@ livre_1(char *host)
 				lv1->auteur = auteur;
 				lv1->editeur = editeur;
 				lv1->anneePub = annePub;
-				lv1->nbrExemplaire = nbrExemplaire;
+				lv1->nbrExmplr = nbrExemplaire;
 				lv1->prix = prix;
 				result_2 = ajouter_1(lv1, clnt);
-				if (result_2 == (void *) NULL) {
+				if (result_2 == (int *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
-				printf("Livre bien ajouter\n");
+				if(*result_2 == 1)
+				{
+					printf("Livre No Ajouter\n");
+				}
+				else
+				{
+					printf("Livre Ajouter\n");
+				}
 				break;
 			case 3:
 				printf("num -->");
@@ -119,13 +137,13 @@ livre_1(char *host)
 				scanf("%s",auteur);
 				printf("editeur -->");
 				scanf("%s",editeur);
-				printf("annee Pub(yyyy/mm/dd) -->");
+				printf("annee Pub(yyyy-mm-dd) -->");
 				scanf("%s",annePub);
-				printf("nbr exemplaire -->");
+				printf("nombre exemplaire -->");
 				scanf("%d",&nbrExemplaire);
 				printf("prix -->");
 				scanf("%f",&prix);
-				
+
 				lv1->titre = (char*)malloc(30);
 				lv1->auteur = (char*)malloc(30);
 				lv1->editeur = (char*)malloc(30);
@@ -136,49 +154,74 @@ livre_1(char *host)
 				lv1->auteur = auteur;
 				lv1->editeur = editeur;
 				lv1->anneePub = annePub;
-				lv1->nbrExemplaire = nbrExemplaire;
+				lv1->nbrExmplr = nbrExemplaire;
 				lv1->prix = prix;
 				result_3 = modifier_1(lv1, clnt);
-				if (result_3 == (void *) NULL) {
+				if (result_3 == (int *) NULL) {
 					clnt_perror (clnt, "call failed");
+				}
+				if(*result_3 == 1)
+				{
+					printf("Livre No Modifier ou No Trouver\n");
+				}
+				else
+				{
+					printf("Livre modifier\n");
 				}
 				break;
 			case 4:
-				printf("titre -->");
-				scanf("%s",supprimer_1_arg);
+				printf("num de livre -->");
+				scanf("%d",&supprimer_1_arg);
 				result_4 = supprimer_1(&supprimer_1_arg, clnt);
-				if (result_4 == (void *) NULL) {
+				if (result_4 == (int *) NULL) {
 					clnt_perror (clnt, "call failed");
+				}
+				if(*result_4 == 1)
+				{
+					printf("Livre No Supprimer ou No Trouver\n");
+				}
+				else
+				{
+					printf("Livre supprimer\n");
 				}
 				break;
 			case 5:
-				printf("titre -->");
-				scanf("%s",consulter_1_arg);
+				printf("num de livre -->");
+				scanf("%d",&consulter_1_arg);
 				result_5 = consulter_1(&consulter_1_arg, clnt);
 				if (result_5 == (livre *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
-				printf("{%d,%s,%s,%s,%s,%d,%.2f}\n"
-					,result_5->num
-					,result_5->titre
-					,result_5->auteur
-					,result_5->editeur
-					,result_5->anneePub
-					,result_5->nbrExemplaire
-					,result_5->prix);
+				if (result_5 == (livre *) NULL)
+				{
+					printf("Livre non Trouver\n");
+				}else{
+					printf("%d,%s,%s,%s,%s,%d,%.2f\n"
+						,result_5->num
+						,result_5->titre
+						,result_5->auteur
+						,result_5->editeur
+						,result_5->anneePub
+						,result_5->nbrExmplr
+						,result_5->prix);
+				}
 				break;
 			case 6:
 				result_6 = afficher_1((void*)&afficher_1_arg, clnt);
 				if (result_6 == (livres *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
-				for(int i=0;i<result_6->livres_len;i++){
-					printf("{%d,%s,%s,%s,%s,%d,%.2f}\n",result_6->livres_val[i].num
-					,result_6->livres_val[i].titre,result_6->livres_val[i].auteur
-					,result_6->livres_val[i].editeur,result_6->livres_val[i].anneePub
-					,result_6->livres_val[i].nbrExemplaire,result_6->livres_val[i].prix);
+
+				if(result_6->livres_len == 0){
+					printf("Aucun livre trouver\n");
+				}else{
+					for(int i=0;i<result_6->livres_len;i++){
+						printf("%d - %d,%s,%s,%s,%s,%d,%.2f}\n",i+1,result_6->livres_val[i].num
+						,result_6->livres_val[i].titre,result_6->livres_val[i].auteur
+						,result_6->livres_val[i].editeur,result_6->livres_val[i].anneePub
+						,result_6->livres_val[i].nbrExmplr,result_6->livres_val[i].prix);
+					}
 				}
-				
 				break;
 			case 7:
 				printf("auteur -->");
@@ -187,14 +230,17 @@ livre_1(char *host)
 				if (result_7 == (livres *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
-				
-				for(int i=0;i<result_7->livres_len;i++){
-					printf("{%d,%s,%s,%s,%s,%d,%.2f}\n",result_7->livres_val[i].num
+
+				if(result_7->livres_len == 0){
+					printf("Aucun livre trouver\n");
+				}else{
+					for(int i=0;i<result_7->livres_len;i++){
+					printf("%d - %d,%s,%s,%s,%s,%d,%.2f\n",i+1,result_7->livres_val[i].num
 					,result_7->livres_val[i].titre,result_7->livres_val[i].auteur
 					,result_7->livres_val[i].editeur,result_7->livres_val[i].anneePub
-					,result_7->livres_val[i].nbrExemplaire,result_7->livres_val[i].prix);
+					,result_7->livres_val[i].nbrExmplr,result_7->livres_val[i].prix);
 				}
-				
+				}
 				break;
 			case 8:
 				result_8 = prix_1((void*)&prix_1_arg, clnt);
@@ -203,24 +249,14 @@ livre_1(char *host)
 				}
 				printf("Le prix total des livres %.2f \n",*result_8);
 				break;
+			case 0:
+				return 0;
 			default:
+				printf("Donner un nombre entre 1 et 8 \n");
 				break;
 		}
 	}
 	clnt_destroy (clnt);
-}
 
-
-int
-main (int argc, char *argv[])
-{
-	char *host;
-
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
-	}
-	host = argv[1];
-	livre_1 (host);
 exit (0);
-}
+	}

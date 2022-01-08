@@ -1,20 +1,21 @@
+
 struct livre {
     int num;
-    string titre<30>;
+    string titre<255>;
     string auteur<30>;
     string editeur<30>;
     string anneePub<16>;
-    int nbrExemplaire;
+    int nbrExmplr;
     float prix;
 };
 typedef livre livres<>;
 program LIVRE{
     version V1{
-        void INIT() = 1;
-        void AJOUTER(livre) = 2;
-        void MODIFIER(livre) = 3;
-        void SUPPRIMER(string) = 4;
-        livre CONSULTER(string) = 5;
+        int INIT() = 1;
+        int AJOUTER(livre) = 2;
+        int MODIFIER(livre) = 3;
+        int SUPPRIMER(int) = 4;
+        livre CONSULTER(int) = 5;
         livres AFFICHER() = 6;
         livres AUTEUR(string) = 7;
         float PRIX() = 8; 
