@@ -30,10 +30,15 @@ main (int argc, char *argv[])
 	char *prix_1_arg;
 
 	int numero;
+
+	//allouer espace pour livre (temporaire)
 	livre *lv1;
 	lv1 = malloc(sizeof(livre));
 
+	//preparer des variables pour les lire (scanf)
 	int num;
+
+	//allouer pour les string
 	char *titre;
 	titre = (char*)malloc(30);
 	char *auteur;
@@ -74,6 +79,10 @@ main (int argc, char *argv[])
 		switch(numero)
 		{
 			case 1:
+
+				//le resultat c'est un type entier 
+				// 1 - Success
+				// 0 - failed
 				result_1 = init_1((void*)&init_1_arg, clnt);
 				if (result_1 == (int *) NULL) {
 				clnt_perror (clnt, "call failed");
@@ -88,6 +97,7 @@ main (int argc, char *argv[])
 				}
 				break;
 			case 2:
+				//lire les variables
 				printf("num -->");
 				scanf("%d",&num);
 				printf("titre -->");
@@ -103,6 +113,10 @@ main (int argc, char *argv[])
 				printf("prix -->");
 				scanf("%f",&prix);
 
+				//les copiers dans notre lire temp 
+				//car dans rpc on peut pas envoyer plusieur entrées alors on les stock dans un enregistrement (Livre)
+
+				//creer un espace pour chaque type de string
 				lv1->titre = (char*)malloc(30);
 				lv1->auteur = (char*)malloc(30);
 				lv1->editeur = (char*)malloc(30);
@@ -115,6 +129,9 @@ main (int argc, char *argv[])
 				lv1->anneePub = annePub;
 				lv1->nbrExmplr = nbrExemplaire;
 				lv1->prix = prix;
+
+				//envoyer livre
+				//resultat entier
 				result_2 = ajouter_1(lv1, clnt);
 				if (result_2 == (int *) NULL) {
 					clnt_perror (clnt, "call failed");
@@ -129,6 +146,7 @@ main (int argc, char *argv[])
 				}
 				break;
 			case 3:
+				//la meme procedure comme Ajouter
 				printf("num -->");
 				scanf("%d",&num);
 				printf("titre -->");
@@ -170,6 +188,7 @@ main (int argc, char *argv[])
 				}
 				break;
 			case 4:
+				//lire et envoyer le numero de livre
 				printf("num de livre -->");
 				scanf("%d",&supprimer_1_arg);
 				result_4 = supprimer_1(&supprimer_1_arg, clnt);
@@ -186,16 +205,21 @@ main (int argc, char *argv[])
 				}
 				break;
 			case 5:
+				//lire et envoyer le numero de livre
 				printf("num de livre -->");
 				scanf("%d",&consulter_1_arg);
+
+				//resultat c'est un type livre
 				result_5 = consulter_1(&consulter_1_arg, clnt);
 				if (result_5 == (livre *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
+				//dans le cas où on a pas trouver le livre on retourne un NULL
 				if (result_5 == (livre *) NULL)
 				{
 					printf("Livre non Trouver\n");
 				}else{
+					// afficher le livre trouver
 					printf("%d,%s,%s,%s,%s,%d,%.2f\n"
 						,result_5->num
 						,result_5->titre
@@ -207,11 +231,12 @@ main (int argc, char *argv[])
 				}
 				break;
 			case 6:
+				// resultat c'est une liste de livre
 				result_6 = afficher_1((void*)&afficher_1_arg, clnt);
 				if (result_6 == (livres *) NULL) {
 					clnt_perror (clnt, "call failed");
 				}
-
+				// si la taille de resultat est 0 alors on a pas trouver aucun livre
 				if(result_6->livres_len == 0){
 					printf("Aucun livre trouver\n");
 				}else{

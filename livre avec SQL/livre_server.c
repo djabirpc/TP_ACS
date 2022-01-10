@@ -20,28 +20,25 @@ init_1_svc(void *argp, struct svc_req *rqstp)
 	printf("init_1_svc \n");
     MYSQL* conn = mysql_init(NULL);
 
-	//connecter à notre base de donner Livre
+	//connection à notre base de données Livre
     if (mysql_real_connect(conn, "localhost", "root", "papamama123", "Livre", 0, NULL, 0) == NULL) {
         printf("Unable to connect with MySQL server\n");
         mysql_close(conn);
 		result = 1;
         return &result;
     }
-	//creer table Livre
+	//creation de la table Livre
 	mysql_query(conn, "CREATE TABLE Livre(num INT NOT NULL PRIMARY KEY, titre VARCHAR(30), auteur VARCHAR(30), editeur VARCHAR(30),anneePub DATE,nbrExemplaire INT,prix FLOAT)");
 
-	//inserer qlq livre
-    mysql_query(conn, "insert into Livre values(1,'nouha','tigrine','tigrine','1992-02-01', 5 , 12)");
+	//inserer quelques livres
+    mysql_query(conn, "insert into Livre values(1,'Archi M2','djabir','kahlouche','1992-02-01', 5 , 12)");
 
-	mysql_query(conn, "insert into Livre values(2,'manel','chiabi','chiabi','1998-08-02', 9 , 258)");
+	mysql_query(conn, "insert into Livre values(2,'Data Structure','zaza','zaza','1998-08-02', 9 , 258)");
 
-	mysql_query(conn, "insert into Livre values(3,'hicham','hicham','hicham','1999-12-21', 3 , 10)");
+	mysql_query(conn, "insert into Livre values(3,'Deep Learning','gaceb','test','1999-12-21', 3 , 10)");
 
     mysql_close(conn);
 
-    printf("Database created successfully\n");
-
-	//return 1 dans le cas de sucess
 	result = 1;
 	return &result;
 }
@@ -54,6 +51,9 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 	MYSQL* conn = mysql_init(NULL);
     mysql_real_connect(conn, "localhost", "root", "papamama123", "Livre", 0, NULL, 0);
 
+	/*
+		INSERT INTO Livre values(%d,'%s','%s','%s','%s', %d , %f)
+	*/
 	//sprintf c'est pour inserer les elements dans l'ordre et les enregistrer dans la variable query
 	sprintf(query, "insert into Livre values(%d,'%s','%s','%s','%s', %d , %f)",
 						argp->num,
@@ -64,7 +64,7 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 						argp->nbrExmplr,
 						argp->prix);
 
-	//mysql_query pour executer les requetes sql dans la connection conn la quelle est connecter dans notre BDD
+	//mysql_query pour executer les requetes sql dans la connection conn qui est connecter à notre BDD
 	// elle return NULL dans le cas d'echec
 	if (mysql_query(conn, query)) {
         mysql_close(conn);
@@ -86,7 +86,17 @@ modifier_1_svc(livre *argp, struct svc_req *rqstp)
     MYSQL* conn = mysql_init(NULL);
     mysql_real_connect(conn, "localhost", "root", "papamama123", "Livre", 0, NULL, 0);
 
-	//la requete pour modifier le livre
+	/*
+		Update livre set titre = '%s',
+			auteur = '%s',
+			editeur = '%s', 
+			anneePub = '%s',
+			nbrExemplaire = %d , 
+			prix = %f 
+			where num = %d",
+	*/
+
+	//la requete pour modifier un livre
 	sprintf(query, "update Livre set titre = '%s',auteur = '%s',editeur = '%s', anneePub = '%s', nbrExemplaire = %d , prix = %f where num = %d",
 						argp->titre,
 						argp->auteur,
@@ -114,6 +124,10 @@ supprimer_1_svc(int *argp, struct svc_req *rqstp)
 
     MYSQL* conn = mysql_init(NULL);
     mysql_real_connect(conn, "localhost", "root", "papamama123", "Livre", 0, NULL, 0);
+
+	/*
+		DELETE FROM Livre WHERE num=%d
+	*/
 	sprintf(query, "DELETE FROM Livre WHERE num=%d",*argp);
 	if (mysql_query(conn, query)) {
         mysql_close(conn);
@@ -137,18 +151,20 @@ consulter_1_svc(int *argp, struct svc_req *rqstp)
     MYSQL_ROW record;
     
     mysql_real_connect(conn, "localhost", "root", "papamama123", "Livre", 0, NULL, 0);
-
+	
+	/*
+		SELECT * FROM Livre WHERE num = %d
+	*/
     sprintf(query, "SELECT * FROM Livre WHERE num = %d", *argp);
     mysql_query(conn, query);
 
-	// enregistrer le resultat dans rs (rs c un MYSQL_RES pour Resultat)
+	// enregistrer le resultat dans rs (rs c'est un MYSQL_RES pour Resultat)
     MYSQL_RES* rs = mysql_store_result(conn);
 
-	//record c pour lire les elements d'une lignes
+	//record c'est pour lire les elements d'une lignes
 	//on lis chaque ligne de notre resultat
-	//et le enregistrer dans record pour le lire ensuite
+	//et on l'enregistre dans record pour le lire ensuite
     while (record = mysql_fetch_row(rs)) {
-        printf("%s %s %s\n", record[0], record[1], record[2]);
 		livre lv1;
 		lv1.titre = (char*)malloc(30);
 		lv1.auteur = (char*)malloc(30);
@@ -185,27 +201,24 @@ afficher_1_svc(void *argp, struct svc_req *rqstp)
 
     MYSQL_RES* rs = mysql_store_result(conn);
 
-	// (int)mysql_num_rows(rs) c'est pour retourner le nombre de ligne trouver dans resultat et le transferer à entier
+	// (int)mysql_num_rows(rs) to parse it to type int because he come in int_64
 	num = (int)mysql_num_rows(rs);
 
 	// saisir la taille de la nouvelle liste pour copier le resultat dedans
 	result.livres_len = num;
 
-	//allouer espace
+	//allouer un espace
 	result.livres_val = malloc(num*sizeof(struct livre));
 
-	//lire chaque ligne
     while (record = mysql_fetch_row(rs)) {
-        printf("%d | %s %s %s %s %s %s %s\n",i, record[0], record[1], record[2], record[3], record[4], record[5],record[6]);
 		
-		//pour chaque ligne on creer element livre et l'enregistrer dans notre tableau de livre
 		livre lv1;
 		lv1.titre = (char*)malloc(30);
 		lv1.auteur = (char*)malloc(30);
 		lv1.editeur = (char*)malloc(30);
 		lv1.anneePub = (char*)malloc(30);
 
-		// atoi c pour transfer type string en entier car le resultat de MYSQL est tjr un string
+		// atoi c'est pour transferer type string en entier car le resultat de MYSQL est tjr un string
 		lv1.num = atoi(record[0]);
 		strcpy(lv1.titre , record[1]);
 		strcpy(lv1.auteur , record[2]);
@@ -213,7 +226,7 @@ afficher_1_svc(void *argp, struct svc_req *rqstp)
 		strcpy(lv1.anneePub , record[4]);
 		lv1.nbrExmplr = atoi(record[5]);
 
-		//atoll c pour type string vers float
+		//atoll c'est pour type string vers float
 		lv1.prix = atoll(record[6]);
 
 		result.livres_val[i] = lv1;
@@ -233,7 +246,7 @@ auteur_1_svc(char **argp, struct svc_req *rqstp)
 	int num,i = 0;
 
 	/*
-		La meme chose que dans consulter toute les livres juste ici c par auteur
+		La meme chose que la fonction consulter toute les livres juste que ici c'est par auteur
 	*/
 
     MYSQL* conn = mysql_init(NULL);
@@ -250,7 +263,6 @@ auteur_1_svc(char **argp, struct svc_req *rqstp)
 	result.livres_len = num;
 	result.livres_val = malloc(num*sizeof(struct livre));
     while (record = mysql_fetch_row(rs)) {
-        printf("%d | %s %s %s %s %s %s %s\n",i, record[0], record[1], record[2], record[3], record[4], record[5],record[6]);
 		livre lv1;
 		lv1.titre = (char*)malloc(30);
 		lv1.auteur = (char*)malloc(30);
@@ -289,7 +301,7 @@ prix_1_svc(void *argp, struct svc_req *rqstp)
 
     MYSQL_RES* rs = mysql_store_result(conn);
     while (record = mysql_fetch_row(rs)) {
-		//lire chaque ligne et le trasfrer vers float
+		//lire chaque ligne et le transfrer vers float
 		num += atoll(record[6]);
     }
     mysql_close(conn);

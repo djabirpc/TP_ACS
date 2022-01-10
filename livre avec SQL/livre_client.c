@@ -6,6 +6,10 @@
 
 #include "livre.h"
 
+/*
+	Le meme code celle de Tableau
+*/
+
 int
 main (int argc, char *argv[])
 {

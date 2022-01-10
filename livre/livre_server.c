@@ -14,7 +14,7 @@ init_1_svc(void *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	//replire qlq livre
+	//remplire quelque livre pour initialisation
 
 	livre lv1,lv2,lv3;
 
@@ -35,9 +35,9 @@ init_1_svc(void *argp, struct svc_req *rqstp)
 	lv2.prix = 19.99;
 
 	lv3.num = 3;
-	lv3.titre = "hicham";
-	lv3.auteur = "omar";
-	lv3.editeur = "hicham";
+	lv3.titre = "zaza";
+	lv3.auteur = "zaza";
+	lv3.editeur = "zaza";
 	lv3.anneePub = "1998/03/21";
 	lv3.nbrExmplr = 10;
 	lv3.prix = 14.99;
@@ -48,12 +48,12 @@ init_1_svc(void *argp, struct svc_req *rqstp)
 	//allouer espace pour notre liste de livre
 	lvr.livres_val = malloc(3*sizeof(struct livre));
 
-	// les initialiser car c livres c un tableau
+	// Initialisation du tableau lvr qui est de type livre
 	lvr.livres_val[0] = lv1;
 	lvr.livres_val[1] = lv2;
 	lvr.livres_val[2] = lv3;
 
-	//return 1 dans le cas de success
+	//return 1 dans le cas de succès
 	result = 1;
 	return &result;
 }
@@ -64,21 +64,21 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 	static int  result;
 
 	/*
-		Le probleme dans rpc que on a fréquenter c'est que on peut pas ajouter directement une case de livre
-		dans notre liste des livres (livres), il faut allouer encore une fois une toute une liste pour
-		la liste et ajouter la case
+		Le problème dans rpc qu'on a rencontré c'est qu'on ne peut pas ajouter directement une case de livre
+		dans notre liste des livres (livres), il faut allouer encore une fois une toute nouvelle liste pour
+		pouvoir ajouter la nouvelle case du livre
 		par exemple 
-		on avait 5 livre , taille 5
-		il faut creer une nouvelle liste avec taille 6 et copier les 5 livres
+		on avait 5 livre , donc la taille est égale à 5
+		il faut créer une nouvelle liste avec taille égale à 6 et copier les 5 livres
 		et à la fin ajouter le nouveau livre
 	*/
 	int length;
 
-	//creer une liste temp pour copier les elements de l'ancienne liste
+	//temp c'est liste de livre pour copier les anciens elements
 	livres temp;
 	temp = lvr;
 
-	//on a creer un livre temp pour copier les attributes de livre que on a recu (argp)
+	//on a creer un livre temp pour copier les attributes de livre recu (argp)
 	livre lv1;
 
 	//allouer pour les chaines de caracteres
@@ -90,8 +90,8 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 	lv1.num = argp->num;
 
 	/*
-		on utilise strcpy pour copier les chaines de caractrer car il copier avec pointeur 
-		mais pas par caractere , et c fonctionnell
+		on utilise strcpy pour copier les chaines de caractrer car il copie avec pointeur 
+		mais pas par caractere , et c'est fonctionnelle
 	*/
 	strcpy(lv1.titre , argp->titre);
 	strcpy(lv1.auteur , argp->auteur);
@@ -109,7 +109,7 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 	//allouer espace
 	lvr.livres_val = malloc(length * sizeof(struct livre));
 
-	//bouvle for pour copier tout les elements de l'ancienne liste vers la nouvelle
+	//boucle for pour copier tout les elements de l'ancienne liste vers la nouvelle
 	for(int i=0;i<length;i++)
 	{
 		lvr.livres_val[i] = temp.livres_val[i];
@@ -118,7 +118,7 @@ ajouter_1_svc(livre *argp, struct svc_req *rqstp)
 	//ajouter dans la derniere position le nouveaux element
 	lvr.livres_val[length-1] = lv1;
 
-	//retourn 1 dans le cas de success
+	//retourn 1 dans le cas de succes
 	result = 1;
 	return &result;
 }
@@ -147,7 +147,7 @@ modifier_1_svc(livre *argp, struct svc_req *rqstp)
 	//boucle for pour chercher element
 	for(int i=0;i<lvr.livres_len;i++)
 	{
-		// si livre trouver
+		// si le livre a été trouver
 		if(lvr.livres_val[i].num == lv1.num)
 		{
 			// on remplit les nouvellles information
@@ -158,12 +158,12 @@ modifier_1_svc(livre *argp, struct svc_req *rqstp)
 			lvr.livres_val[i].nbrExmplr = lv1.nbrExmplr;
             lvr.livres_val[i].prix = lv1.prix;
 			
-			//retourn 1 dans le cas de success
+			//retourn 1 dans le cas de succes
 			result = 1;
 		}
 		else
 		{
-			//retourn 1 dans le cas de livre no trouver
+			//retourn 1 dans le cas de livre non trouver
 			result = 0;
 		}
 	}
@@ -176,38 +176,26 @@ supprimer_1_svc(int *argp, struct svc_req *rqstp)
 {
 	static int  result;
 
-	//index c'est pour marquer la position de livre
-	int index;
+	int position;
 	for(int i=0;i<lvr.livres_len;i++)
 	{
 		if(lvr.livres_val[i].num == *argp)
 		{
-			//si le livre trouver on return son position
-			index = i;
+			position = i;
 		}
 		else
 		{
-			result = 0;
+			position = 0;
 		}
 	}
-
-	/*
-		on decale les positions des element i-1 a partir de la positions
-		exemple
-		[2,8,12,3,45,42], n=6
-		on veut supprimer position 3
-		on aura
-		[2,8,12,45,42] et n=5
-	*/
-	for(int i = index ;i<lvr.livres_len-1;i++)
+	for(int i = position ;i<lvr.livres_len-1;i++)
 	{
 		lvr.livres_val[i] = lvr.livres_val[i+1];
 	}
 
-	//recrir la nouvelle taille
+	//supprimer une case car on a supprimer un livre
     lvr.livres_len = lvr.livres_len - 1;
 
-	// return 1 cas success
 	result = 1;
 	return &result;
 }
@@ -236,7 +224,7 @@ consulter_1_svc(int *argp, struct svc_req *rqstp)
 			result->nbrExmplr = lvr.livres_val[i].nbrExmplr;
 			result->prix = lvr.livres_val[i].prix;
 
-			//ensuite retourner livre trouver
+			//ensuite retourner le livre trouvé
 			return result;
 		}
 	}
@@ -248,7 +236,7 @@ afficher_1_svc(void *argp, struct svc_req *rqstp)
 {
 	static livres  result;
 
-	//returner direcement la list lvr
+	//retourne directement la liste lvr
 	result = lvr;
 
 	return &result;
@@ -261,27 +249,22 @@ auteur_1_svc(char **argp, struct svc_req *rqstp)
 	int num = 0,num2=0;
 	for(int i=0;i<lvr.livres_len;i++)
 	{
-		// dans le cas auteur trouver
 		if(strcmp(lvr.livres_val[i].auteur, *argp) == 0)
 		{
-			/*
-				on calcule le nombre des livres de ce auteur , ensuite creer une liste de livre avec 
-				la taille de numbre de livre trouver
-			*/
 			num++;
 		}
 	}
-	//saisir la taille de numbre de livre trouver
+	//saisir la taille de nombre de livre trouver
 	result_7.livres_len = num;
 
-	//allouer espave pour le nombre de livre
+	//allouer un espace pour le nombre de livre
 	result_7.livres_val = malloc(num*sizeof(struct livre));
 
 
 	//refaire le meme traitement quand on a chercher sur le nombre de livre trouver
 	for(int i=0;i<lvr.livres_len;i++)
 	{
-		//mais cette fois c par copier les elements trouver dans la liste creer
+		//mais cette fois c'est par copier les elements trouver dans la liste creer
 		if(strcmp(lvr.livres_val[i].auteur, *argp) == 0)
 		{
 			result_7.livres_val[num2] = lvr.livres_val[i];
@@ -298,7 +281,7 @@ prix_1_svc(void *argp, struct svc_req *rqstp)
 {
 	static float  result;
 
-	//boucler sur la liste et faire la summe des variables prix
+	//boucler sur la liste et faire la somme des variables prix
 	for(int i=0;i<lvr.livres_len;i++)
 	{
 		result +=lvr.livres_val[i].prix;
